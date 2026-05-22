@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Estudio Aramburu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0C0D0F;
+  --surface: #141519;
+  --surface2: #1C1E24;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #F0EEE8;
+  --muted: #6E7280;
+  --muted2: #9399A6;
+  --danger: #FF5C5C;
+  --danger-dim: rgba(255,92,92,0.12);
+  --warning: #F0A043;
+  --warning-dim: rgba(240,160,67,0.12);
+  --success: #4ADE80;
+  --success-dim: rgba(74,222,128,0.12);
+  --blue: #60A5FA;
+  --blue-dim: rgba(96,165,250,0.12);
+  --gold: #F5C542;
+  --accent: #7C6AF7;
+  --accent-dim: rgba(124,106,247,0.15);
+}
+body {
+  font-family: 'Geist', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+  font-size: 14px;
+}
+
+/* subtle grid texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shell { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 2rem 2.5rem; }
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+.logo-block { display: flex; align-items: center; gap: 14px; }
+.logo-icon {
+  width: 38px; height: 38px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  color: var(--accent);
+}
+.logo { font-size: 16px; font-weight: 500; letter-spacing: -0.2px; color: var(--text); }
+.subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'Geist Mono', monospace; }
+.btn-refresh {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-family: 'Geist', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-refresh:hover { background: var(--surface); border-color: var(--muted); }
+.btn-refresh.loading { opacity: 0.4; pointer-events: none; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 2.25rem 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── METRICS ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.metric:hover { border-color: var(--border2); }
+.metric-label { font-size: 11px; color: var(--muted); margin-bottom: 10px; letter-spacing: 0.03em; }
+.metric-value {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -1px;
+  font-family: 'Geist Mono', monospace;
+  color: var(--text);
+  line-height: 1;
+}
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 8px; }
+.metric-accent { border-color: rgba(124,106,247,0.3); }
+.metric-accent .metric-value { color: var(--accent); }
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.4rem;
+}
+.card-label { font-size: 11px; color: var(--muted); margin-bottom: 16px; letter-spacing: 0.03em; }
+
+/* ── COBRANZA ── */
+.cob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.cob-side {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.cob-side-title { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.cob-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cob-row:last-child { margin-bottom: 0; }
+.bar { height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; margin: 6px 0 10px; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+/* ── ÚLTIMOS PAGOS ── */
+.pago-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.pago-item:last-child { border-bottom: none; }
+.pago-nombre { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+.pago-row { display: flex; justify-content: space-between; align-items: center; }
+.pago-monto { font-size: 13px; color: var(--success); font-family: 'Geist Mono', monospace; }
+.pago-mes { font-size: 11px; color: var(--muted); }
+.pago-fecha { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── GRÁFICO ── */
+.grafico-wrap { height: 160px; display: flex; align-items: flex-end; gap: 8px; }
+.grafico-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.grafico-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.4s ease; }
+.grafico-label { font-size: 11px; color: var(--muted); font-family: 'Geist Mono', monospace; }
+.grafico-val { font-size: 10px; color: var(--muted); font-family: 'Geist Mono', monospace; }
+
+/* ── ALERTAS ── */
+.alert-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.alert-row:last-child { border-bottom: none; }
+.alert-label { font-size: 13px; color: var(--muted2); }
+.badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; font-family: 'Geist Mono', monospace; }
+.badge-danger { background: var(--danger-dim); color: var(--danger); }
+.badge-warning { background: var(--warning-dim); color: var(--warning); }
+.badge-success { background: var(--success-dim); color: var(--success); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { font-size: 13px; color: var(--muted2); }
+.stat-val { font-size: 13px; font-weight: 500; font-family: 'Geist Mono', monospace; }
+
+/* ── TABLA GENERAL ── */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+thead { background: var(--surface2); position: sticky; top: 0; z-index: 2; }
+th {
+  font-size: 10px; font-weight: 500; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 11px 16px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+th:not(:first-child) { text-align: right; }
+td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td:not(:first-child) { text-align: right; font-family: 'Geist Mono', monospace; font-size: 12px; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-muted { color: var(--muted); font-style: italic; }
+.text-blue { color: var(--blue); }
+
+.table-footer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.btn-action {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-family: 'Geist', sans-serif;
+  cursor: pointer;
+  color: var(--muted2);
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-action:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+
+/* ── TABLA RESPONSABLES ── */
+.resp-header { display: flex; align-items: center; gap: 12px; margin: 2.25rem 0 1rem; }
+.resp-header-label {
+  font-size: 10px; font-weight: 500; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.resp-count-pill {
+  font-size: 11px; font-weight: 500; padding: 2px 10px;
+  border-radius: 20px; background: var(--blue-dim); color: var(--blue);
+  font-family: 'Geist Mono', monospace;
+}
+.resp-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.resp-wrap {
+  background: var(--surface);
+  border: 1px solid rgba(96,165,250,0.2);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.resp-wrap thead { background: rgba(96,165,250,0.06); }
+.resp-wrap th { color: var(--blue); border-bottom-color: rgba(96,165,250,0.1); }
+.resp-wrap tr:hover td { background: rgba(96,165,250,0.04); }
+
+.rank-cell { text-align: center !important; padding: 11px 8px !important; }
+.rank-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  font-size: 11px; font-weight: 600;
+  font-family: 'Geist Mono', monospace;
+  background: var(--surface2); color: var(--muted);
+  border: 1px solid var(--border);
+}
+.rank-gold { background: rgba(245,197,66,0.15); color: var(--gold); border-color: rgba(245,197,66,0.4); }
+.rank-silver { background: rgba(180,180,200,0.15); color: #C0C8D8; border-color: rgba(180,180,200,0.3); }
+.rank-bronze { background: rgba(200,130,80,0.15); color: #D4956A; border-color: rgba(200,130,80,0.3); }
+
+.resp-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px;
+  background: rgba(96,165,250,0.05);
+  border-top: 1px solid rgba(96,165,250,0.1);
+}
+.resp-footer-label { font-size: 12px; color: var(--blue); font-weight: 500; }
+.resp-footer-val { font-family: 'Geist Mono', monospace; font-size: 14px; font-weight: 500; color: var(--danger); }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--muted);
+  margin-top: 2.5rem; padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-family: 'Geist Mono', monospace;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+.error-msg {
+  background: var(--danger-dim);
+  color: var(--danger);
+  border: 1px solid rgba(255,92,92,0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  margin-top: 1rem;
+}
+
+.spinner {
+  display: inline-block; width: 11px; height: 11px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* fade-in */
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.metric, .card, .table-wrap, .resp-wrap { animation: fadeUp 0.4s ease both; }
+.metric:nth-child(1) { animation-delay: 0.05s; }
+.metric:nth-child(2) { animation-delay: 0.1s; }
+.metric:nth-child(3) { animation-delay: 0.15s; }
+.metric:nth-child(4) { animation-delay: 0.2s; }
+
+@media (max-width: 900px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .cob-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .shell { padding: 1rem; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div class="logo-block">
+    <div class="logo-icon">A</div>
+    <div>
+      <p class="logo">Estudio Aramburu</p>
+      <p class="subtitle" id="last-update">cargando...</p>
+    </div>
+  </div>
+  <button class="btn-refresh" id="btn-refresh" onclick="loadData()">
+    <span id="refresh-icon">&#8635;</span> Actualizar
+  </button>
+</header>
+
+<div id="error-box" style="display:none" class="error-msg"></div>
+
+<div class="section-label">Caja mensual potencial</div>
+<div class="metrics-grid">
+  <div class="metric metric-accent">
+    <p class="metric-label">Total general</p>
+    <p class="metric-value" id="m-total">—</p>
+    <p class="metric-sub">si todos pagan este mes</p>
+  </div>
+  <div class="metric">
+    <p class="metric-label">Monotributistas</p>
+    <p class="metric-value" id="m-mono">—</p>
+    <p class="metric-sub" id="m-mono-sub">— activos</p>
+  </div>
+  <div class="metric">
+    <p class="metric-label">Resp. inscriptos</p>
+    <p class="metric-value" id="m-resp">—</p>
+    <p class="metric-sub" id="m-resp-sub">— activos</p>
+  </div>
+  <div class="metric">
+    <p class="metric-label">Deuda total ARCA</p>
+    <p class="metric-value" style="color:var(--danger)" id="m-arca">—</p>
+    <p class="metric-sub">todos los clientes</p>
+  </div>
+</div>
+
+<div class="section-label">Cobranza <span id="cobranza-mes" style="color:var(--text);font-size:11px;text-transform:none;letter-spacing:0;"></span></div>
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+    <div>
+      <p class="card-label">Cobrado vs pendiente</p>
+      <div style="display:flex;gap:2rem;margin-top:4px;">
+        <div>
+          <p style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;text-transform:uppercase;">Cobrado</p>
+          <p style="font-size:28px;font-weight:500;color:var(--success);font-family:'Geist Mono',monospace;letter-spacing:-1px;line-height:1;" id="c-total-cobrado">—</p>
+        </div>
+        <div style="width:1px;background:var(--border);margin:0 4px;"></div>
+        <div>
+          <p style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;text-transform:uppercase;">Pendiente</p>
+          <p style="font-size:28px;font-weight:500;color:var(--danger);font-family:'Geist Mono',monospace;letter-spacing:-1px;line-height:1;" id="c-total-pendiente">—</p>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;text-transform:uppercase;">Progreso</p>
+      <p style="font-size:28px;font-weight:500;font-family:'Geist Mono',monospace;letter-spacing:-1px;line-height:1;" id="c-porcentaje">—</p>
+    </div>
+  </div>
+  <div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-bottom:20px;">
+    <div id="c-barra" style="height:100%;width:0%;background:var(--success);border-radius:3px;transition:width 0.8s ease;"></div>
+  </div>
+  <div class="cob-grid">
+    <div class="cob-side">
+      <p class="cob-side-title">Monotributistas</p>
+      <div class="cob-row"><span style="font-size:12px;color:var(--muted);">Cobrado</span><span style="font-size:13px;font-weight:500;color:var(--success);font-family:'Geist Mono',monospace;" id="c-mono-cobrado">—</span></div>
+      <div class="bar"><div class="bar-fill" id="c-mono-barra" style="background:var(--success);"></div></div>
+      <div class="cob-row"><span style="font-size:12px;color:var(--muted);">Pendiente</span><span style="font-size:13px;font-weight:500;color:var(--danger);font-family:'Geist Mono',monospace;" id="c-mono-pendiente">—</span></div>
+    </div>
+    <div class="cob-side">
+      <p class="cob-side-title">Responsables inscriptos</p>
+      <div class="cob-row"><span style="font-size:12px;color:var(--muted);">Cobrado</span><span style="font-size:13px;font-weight:500;color:var(--success);font-family:'Geist Mono',monospace;" id="c-resp-cobrado">—</span></div>
+      <div class="bar"><div class="bar-fill" id="c-resp-barra" style="background:var(--success);"></div></div>
+      <div class="cob-row"><span style="font-size:12px;color:var(--muted);">Pendiente</span><span style="font-size:13px;font-weight:500;color:var(--danger);font-family:'Geist Mono',monospace;" id="c-resp-pendiente">—</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-label">Últimos pagos registrados</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="card">
+    <p class="card-label">Monotributistas</p>
+    <div id="ultimos-mono" style="max-height:220px;overflow-y:auto;"><p style="color:var(--muted);font-size:13px;">Cargando...</p></div>
+  </div>
+  <div class="card">
+    <p class="card-label">Responsables inscriptos</p>
+    <div id="ultimos-resp" style="max-height:220px;overflow-y:auto;"><p style="color:var(--muted);font-size:13px;">Cargando...</p></div>
+  </div>
+</div>
+
+<div class="section-label">Evolución de cobranza</div>
+<div class="card">
+  <p class="card-label" style="margin-bottom:20px;">Cobrado por mes — últimos 6 meses</p>
+  <div class="grafico-wrap" id="grafico-barras"><p style="color:var(--muted);font-size:13px;">Cargando...</p></div>
+</div>
+
+<div class="section-label">Estado de clientes</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="card">
+    <p class="card-label">Alertas activas</p>
+    <div class="alert-row"><span class="alert-label">Debe ARCA + honorarios</span><span class="badge badge-danger" id="cnt-critico">—</span></div>
+    <div class="alert-row"><span class="alert-label">Solo debe honorarios</span><span class="badge badge-warning" id="cnt-honor">—</span></div>
+    <div class="alert-row"><span class="alert-label">Solo debe ARCA</span><span class="badge badge-warning" id="cnt-arca">—</span></div>
+    <div class="alert-row"><span class="alert-label">Al día</span><span class="badge badge-success" id="cnt-ok">—</span></div>
+  </div>
+  <div class="card">
+    <p class="card-label">Totales a gestionar</p>
+    <div class="stat-row"><span class="stat-label">Total clientes</span><span class="stat-val" id="t-total">—</span></div>
+    <div class="stat-row"><span class="stat-label">Con alerta</span><span class="stat-val text-danger" id="t-alerta">—</span></div>
+    <div class="stat-row"><span class="stat-label">Deuda ARCA total</span><span class="stat-val text-danger" id="t-deuda">—</span></div>
+    <div class="stat-row"><span class="stat-label">Honorarios pend.</span><span class="stat-val text-warning" id="t-honor">—</span></div>
+  </div>
+</div>
+
+<div class="section-label">Top clientes a gestionar</div>
+<div class="table-wrap" style="max-height:480px;overflow-y:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:38%">Cliente</th>
+        <th style="width:22%">Deuda ARCA</th>
+        <th style="width:22%">Honorarios</th>
+        <th style="width:18%">Estado</th>
+      </tr>
+    </thead>
+    <tbody id="top-table">
+      <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2.5rem;">Cargando...</td></tr>
+    </tbody>
+  </table>
+  <div class="table-footer">
+    <button class="btn-action" onclick="window.open('https://docs.google.com/spreadsheets/d/1adbDAfCX0TdCtlRCd2rXLyq5sRaFQwXv3aViElIM1bc/edit','_blank')">Ver planilla completa ↗</button>
+  </div>
+</div>
+
+<div class="resp-header">
+  <span class="resp-header-label">Top Responsables Inscriptos — Deuda ARCA</span>
+  <span class="resp-count-pill" id="resp-badge">...</span>
+</div>
+<div class="resp-wrap" style="max-height:520px;overflow-y:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:6%;text-align:center;">#</th>
+        <th style="width:36%;text-align:left;">Cliente</th>
+        <th style="width:26%">Deuda ARCA</th>
+        <th style="width:20%">Honorarios</th>
+        <th style="width:12%;text-align:center;">Estado</th>
+      </tr>
+    </thead>
+    <tbody id="resp-top-table">
+      <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2.5rem;">Cargando...</td></tr>
+    </tbody>
+  </table>
+  <div id="resp-footer" style="display:none;" class="resp-footer">
+    <span class="resp-footer-label">Total deuda ARCA — Responsables inscriptos</span>
+    <span class="resp-footer-val" id="resp-total">—</span>
+  </div>
+  <div class="table-footer">
+    <button class="btn-action" onclick="window.open('https://docs.google.com/spreadsheets/d/1adbDAfCX0TdCtlRCd2rXLyq5sRaFQwXv3aViElIM1bc/edit','_blank')">Ver planilla completa ↗</button>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span class="status-dot"></span>
+  <span id="status-text">Conectado · Se actualiza con cada corrida del bot</span>
+</div>
+
+</div><!-- /shell -->
+
+<script>
+const SHEET_ID = '1adbDAfCX0TdCtlRCd2rXLyq5sRaFQwXv3aViElIM1bc';
+const HISTORIAL_ID = '1VP0AUyVGBjV5tSoxSnFtDBQLKWRVFIRvrS0US2ti3pQ';
+
+function fmtFecha(v) {
+  if (!v) return '-';
+  try {
+    let d;
+    if (v && typeof v === 'object' && v.getMonth) { d = v; }
+    else if (typeof v === 'string' && v.includes('Date(')) {
+      const m = v.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
+      if (m) d = new Date(+m[1], +m[2], +m[3], +m[4], +m[5], +m[6]);
+    } else { d = new Date(v); }
+    if (!d || isNaN(d)) return v.toString();
+    return d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+  } catch(e) { return v.toString(); }
+}
+function fmt(v) { return '$' + Math.round(parseFloat(v)||0).toLocaleString('es-AR'); }
+function pct(v) { return (parseFloat(v)||0).toFixed(1) + '%'; }
+
+async function fetchSheet(name, id) {
+  const sid = id || SHEET_ID;
+  const r = await fetch('https://docs.google.com/spreadsheets/d/' + sid + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(name) + '&t=' + Date.now());
+  const txt = await r.text();
+  const json = JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/)[1]);
+  const cols = json.table.cols.map(c => c.label);
+  return json.table.rows.map(row => { const o={}; row.c.forEach((c,i)=>{o[cols[i]]=c?c.v:null;}); return o; });
+}
+async function fetchRaw(name) {
+  const r = await fetch('https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(name) + '&t=' + Date.now());
+  const txt = await r.text();
+  const json = JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/)[1]);
+  return json.table.rows.map(row => row.c.map(c => c ? c.v : null));
+}
+
+async function loadData() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('loading');
+  document.getElementById('refresh-icon').innerHTML = '<span class="spinner"></span>';
+  document.getElementById('error-box').style.display = 'none';
+  try {
+    const [resumen, estado, historial, cctRaw] = await Promise.all([
+      fetchSheet('RESUMEN_HONORARIOS'),
+      fetchSheet('ESTADO_ACTUAL'),
+      fetchSheet('HISTORIAL_PAGOS', HISTORIAL_ID),
+      fetchRaw('CONSULTAS_CUENTAS_TRIBUTARIAS')
+    ]);
+
+    // Caja potencial
+    let monoMonto=0,monoCount=0,respMonto=0,respCount=0;
+    resumen.forEach(r => {
+      let concepto='',cantidad=0,totalMensual=0;
+      Object.values(r).forEach(v=>{if(!v)return;const s=v.toString().toLowerCase();if(s.includes('monotributista')||s.includes('responsable'))concepto=s;});
+      Object.keys(r).forEach(k=>{const kl=k.toLowerCase(),n=parseFloat(r[k]);if(isNaN(n))return;if(kl.includes('cantidad'))cantidad=n;else if(kl.includes('total')||kl.includes('mensual'))totalMensual=n;});
+      if(!totalMensual&&!cantidad){const nums=Object.values(r).map(v=>parseFloat(v)).filter(n=>!isNaN(n)&&n>0);if(nums.length>=2){cantidad=nums[0];totalMensual=nums[1];}else if(nums.length===1)totalMensual=nums[0];}
+      if(concepto.includes('mono')){monoCount=cantidad;monoMonto=totalMensual;}else if(concepto.includes('resp')){respCount=cantidad;respMonto=totalMensual;}
+    });
+    document.getElementById('m-total').textContent=fmt(monoMonto+respMonto);
+    document.getElementById('m-mono').textContent=fmt(monoMonto);
+    document.getElementById('m-mono-sub').textContent=monoCount+' activos';
+    document.getElementById('m-resp').textContent=fmt(respMonto);
+    document.getElementById('m-resp-sub').textContent=respCount+' activos';
+
+    // Cobranza
+    const anio=new Date().getFullYear(),mes=new Date().getMonth()+1;
+    const mesLabel=new Date().toLocaleString('es-AR',{month:'long',year:'numeric'});
+    const pagosMes=historial.filter(r=>{
+      if((r['TIPO']||'').toUpperCase()==='PRUEBA')return false;
+      const f=(r['FECHA_PAGO']||'').toString();
+      if(!f)return false;
+      if(f.includes('Date(')){const m=f.match(/Date\((\d+),(\d+)/i);if(m)return parseInt(m[2])+1===mes&&parseInt(m[1])===anio;}
+      const p=f.split('-');return p.length>=2&&parseInt(p[0])===anio&&parseInt(p[1])===mes;
+    });
+    const monoCob=pagosMes.filter(r=>(r['TIPO']||'').toUpperCase().includes('MONO')).reduce((s,r)=>s+(parseFloat(r['MONTO'])||0),0);
+    const respCob=pagosMes.filter(r=>(r['TIPO']||'').toUpperCase().includes('RESP')).reduce((s,r)=>s+(parseFloat(r['MONTO'])||0),0);
+    const totalCob=monoCob+respCob,monoPend=Math.max(0,monoMonto-monoCob),respPend=Math.max(0,respMonto-respCob);
+    const pot=monoMonto+respMonto,porcent=pot>0?(totalCob/pot*100):0;
+    document.getElementById('cobranza-mes').textContent=mesLabel;
+    document.getElementById('c-total-cobrado').textContent=fmt(totalCob);
+    document.getElementById('c-total-pendiente').textContent=fmt(monoPend+respPend);
+    document.getElementById('c-porcentaje').textContent=pct(porcent);
+    document.getElementById('c-barra').style.width=Math.min(porcent,100)+'%';
+    document.getElementById('c-mono-cobrado').textContent=fmt(monoCob);
+    document.getElementById('c-mono-pendiente').textContent=fmt(monoPend);
+    document.getElementById('c-mono-barra').style.width=(monoMonto>0?monoCob/monoMonto*100:0)+'%';
+    document.getElementById('c-resp-cobrado').textContent=fmt(respCob);
+    document.getElementById('c-resp-pendiente').textContent=fmt(respPend);
+    document.getElementById('c-resp-barra').style.width=(respMonto>0?respCob/respMonto*100:0)+'%';
+
+    // Últimos pagos
+    function renderUltimos(rows,id){
+      const el=document.getElementById(id);
+      const fil=rows.filter(r=>(r['TIPO']||'').toUpperCase()!=='PRUEBA').slice(-4).reverse();
+      if(!fil.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;">Sin pagos registrados</p>';return;}
+      el.innerHTML=fil.map(r=>'<div class="pago-item"><p class="pago-nombre">'+(r['CLIENTE']||'-')+'</p><div class="pago-row"><span class="pago-monto">'+fmt(r['MONTO']||0)+'</span><span class="pago-mes">'+(r['MES']||'')+'</span></div><p class="pago-fecha">'+fmtFecha(r['FECHA_PAGO'])+'</p></div>').join('');
+    }
+    renderUltimos(historial.filter(r=>(r['TIPO']||'').toUpperCase().includes('MONO')),'ultimos-mono');
+    renderUltimos(historial.filter(r=>(r['TIPO']||'').toUpperCase().includes('RESP')),'ultimos-resp');
+
+    // Gráfico
+    const mN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const cpm={};
+    historial.forEach(r=>{
+      if((r['TIPO']||'').toUpperCase()==='PRUEBA')return;
+      const f=(r['FECHA_PAGO']||'').toString();let m2=-1,a2=-1;
+      if(f.includes('Date(')){const mx=f.match(/Date\((\d+),(\d+)/i);if(mx){a2=parseInt(mx[1]);m2=parseInt(mx[2]);}}
+      else{const p=f.split('-');if(p.length>=2){a2=parseInt(p[0]);m2=parseInt(p[1])-1;}}
+      if(m2>=0&&a2>=0){const k=a2+'-'+m2;cpm[k]=(cpm[k]||0)+(parseFloat(r['MONTO'])||0);}
+    });
+    const hoy=new Date(),u6=[];
+    for(let i=5;i>=0;i--){const d=new Date(hoy.getFullYear(),hoy.getMonth()-i,1);const k=d.getFullYear()+'-'+d.getMonth();u6.push({k,label:mN[d.getMonth()],monto:cpm[k]||0});}
+    const maxM=Math.max(...u6.map(m=>m.monto),1);
+    document.getElementById('grafico-barras').innerHTML=u6.map(m=>{
+      const p=Math.max((m.monto/maxM)*100,2),cur=m.k===(hoy.getFullYear()+'-'+hoy.getMonth());
+      return '<div class="grafico-bar-col">'+
+        '<span class="grafico-val">'+(m.monto>0?'$'+Math.round(m.monto/1000)+'k':'')+'</span>'+
+        '<div class="grafico-bar" style="height:'+p+'%;background:'+(cur?'var(--accent)':'var(--surface2)');
+    }).map((html,i)=>html+';border:'+(u6[i].k===(hoy.getFullYear()+'-'+hoy.getMonth())?'1px solid rgba(124,106,247,0.4)':'1px solid var(--border)')+';"></div>'+
+      '<span class="grafico-label" style="color:'+(u6[i].k===(hoy.getFullYear()+'-'+hoy.getMonth())?'var(--text)':'var(--muted)')+';">'+u6[i].label+'</span></div>').join('');
+
+    // Estado
+    let arcaT=0,honT=0,alerta=0,critico=0,soloHon=0,soloArca=0,ok=0;
+    const clientes=[];
+    estado.forEach(r=>{
+      const s=parseFloat(r['SALDO_DEUDOR']||0)||0,h=parseFloat(r['TOTAL_HONORARIOS_PENDIENTES']||0)||0;
+      const al=(r['ALERTA_GESTION']||'').toUpperCase();
+      arcaT+=s;honT+=h;
+      if(al==='SI')alerta++;
+      if(s>0&&h>0)critico++;else if(h>0)soloHon++;else if(s>0)soloArca++;else ok++;
+      if(s>0||h>0)clientes.push({cliente:r['CLIENTE']||'',saldo:s,honor:h,total:s+h});
+    });
+    clientes.sort((a,b)=>b.total-a.total);
+    document.getElementById('m-arca').textContent=fmt(arcaT);
+    document.getElementById('cnt-critico').textContent=critico;
+    document.getElementById('cnt-honor').textContent=soloHon;
+    document.getElementById('cnt-arca').textContent=soloArca;
+    document.getElementById('cnt-ok').textContent=ok;
+    document.getElementById('t-total').textContent=estado.length;
+    document.getElementById('t-alerta').textContent=alerta;
+    document.getElementById('t-deuda').textContent=fmt(arcaT);
+    document.getElementById('t-honor').textContent=fmt(honT);
+
+    document.getElementById('top-table').innerHTML=clientes.slice(0,50).map(c=>{
+      const badge=(c.saldo>0&&c.honor>0)?'<span class="badge badge-danger">crítico</span>':'<span class="badge badge-warning">medio</span>';
+      return '<tr><td title="'+c.cliente+'">'+c.cliente+'</td>'+
+        '<td class="'+(c.saldo>0?'text-danger':'text-muted')+'">'+(c.saldo>0?fmt(c.saldo):'sin deuda')+'</td>'+
+        '<td class="'+(c.honor>0?'text-warning':'text-muted')+'">'+(c.honor>0?fmt(c.honor):'al día')+'</td>'+
+        '<td>'+badge+'</td></tr>';
+    }).join('');
+
+    // Top Responsables
+    const respMap={};
+    cctRaw.forEach(row=>{
+      const est=(row[6]||'').toString(),cli=(row[2]||'').toString(),deuda=parseFloat(row[8])||0;
+      if(est==='CON_DEUDA'&&cli&&deuda>0)respMap[cli]=deuda;
+    });
+    const honorResp={};
+    estado.forEach(r=>{
+      if((r['TIPO_CLIENTE']||'').toUpperCase()==='RESPONSABLE_INSCRIPTO'){
+        const h=parseFloat(r['TOTAL_HONORARIOS_PENDIENTES']||0)||0;
+        if(r['CLIENTE'])honorResp[r['CLIENTE']]=h;
+      }
+    });
+    const respList=Object.entries(respMap).map(([c,d])=>({cliente:c,deuda:d,honor:honorResp[c]||0}));
+    respList.sort((a,b)=>b.deuda-a.deuda);
+    document.getElementById('resp-badge').textContent=respList.length+' con deuda';
+
+    if(!respList.length){
+      document.getElementById('resp-top-table').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2.5rem;">Sin responsables con deuda ARCA registrada</td></tr>';
+    } else {
+      document.getElementById('resp-top-table').innerHTML=respList.map((c,i)=>{
+        const rc=i===0?'rank-gold':i===1?'rank-silver':i===2?'rank-bronze':'';
+        const badge=(c.deuda>0&&c.honor>0)?'<span class="badge badge-danger">ARCA+HON</span>':'<span class="badge badge-blue">ARCA</span>';
+        return '<tr>'+
+          '<td class="rank-cell"><span class="rank-num '+rc+'">'+(i+1)+'</span></td>'+
+          '<td style="font-weight:500;" title="'+c.cliente+'">'+c.cliente+'</td>'+
+          '<td class="text-danger">'+fmt(c.deuda)+'</td>'+
+          '<td class="'+(c.honor>0?'text-warning':'text-muted')+'">'+(c.honor>0?fmt(c.honor):'al día')+'</td>'+
+          '<td style="text-align:center;">'+badge+'</td></tr>';
+      }).join('');
+      document.getElementById('resp-total').textContent=fmt(respList.reduce((s,c)=>s+c.deuda,0));
+      document.getElementById('resp-footer').style.display='flex';
+    }
+
+    const now=new Date(),f=now.toLocaleDateString('es-AR')+' '+now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-update').textContent='actualizado '+f;
+    document.getElementById('status-text').textContent='Conectado · Última actualización: '+f;
+  } catch(e) {
+    console.error(e);
+    document.getElementById('error-box').style.display='block';
+    document.getElementById('error-box').textContent='Error al cargar datos: '+e.message;
+    document.getElementById('last-update').textContent='error al conectar';
+  }
+  btn.classList.remove('loading');
+  document.getElementById('refresh-icon').textContent=String.fromCharCode(8635);
+}
+loadData();
+</script>
+</body>
+</html>
